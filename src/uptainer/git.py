@@ -1,5 +1,5 @@
 from structlog._config import BoundLoggerLazyProxy
-from .typer import TyperGenericReturn
+from uptainer.typer import TyperGenericReturn
 import tempfile
 import git
 
@@ -51,13 +51,15 @@ class Git:
         commit_msg = f"chore: Update version to {newversion}"
         try:
             repo = git.Repo(self.work_directory)
-            if repo.is_dirty():
-                self.log.info(f"Pushing the new version with the commit msg: '{commit_msg}'")
-                repo.index.add([fpath])
-                repo.index.commit(commit_msg)
-                repo.remotes.origin.push()
-            else:
-                self.log.info("No changes to push.")
+            # Inject ssh key
+            with repo.git.custom_environment(GIT_SSH_COMMAND=f"ssh -i {self.private_key}"):
+                if repo.is_dirty():
+                    self.log.info(f"Pushing the new version with the commit msg: '{commit_msg}'")
+                    repo.index.add([fpath])
+                    repo.index.commit(commit_msg)
+                    repo.remotes.origin.push()
+                else:
+                    self.log.info("No changes to push.")
         # TODO: Adding more catch strategy
         except Exception as error:
             self.log.error(f"Error: {error}")
@@ -75,22 +77,12 @@ class Git:
         """
         out = TyperGenericReturn(error=False)
         if self.remote_url.startswith("git@") or self.remote_url.startswith("ssh://"):
-            env = {"GIT_SSH_COMMAND": f"ssh -i {self.private_key}"}
+            git_env = {"GIT_SSH_COMMAND": f"ssh -i {self.private_key}"}
             self.log.info(f"Pulling '{self.remote_url}' to '{self.work_directory}' using the key '{self.private_key}'")
             try:
-                self.repo = git.Repo.clone_from(url=self.remote_url, to_path=self.work_directory, env=env)
+                self.repo = git.Repo.clone_from(url=self.remote_url, to_path=self.work_directory, env=git_env)
                 self.log.info(f"Pull success. Switching to the branch '{self.branch}'")
-                branch_matched = False
-                for branch in self.repo.branches:
-                    if branch.name == self.branch:
-                        branch_matched = True
-                        break
-
-                if branch_matched:
-                    self.repo.git.checkout(self.branch)
-                else:
-                    self.log.error(f"Branch not found. Founds: {self.repo.branches}")
-                    out["error"] = True
+                self.repo.git.checkout(self.branch)
             # TODO: Adding more catch strategy
             except git.exc.GitCommandError as error:
                 self.log.error(f"Error during pulling the repo, error: '{error}'")

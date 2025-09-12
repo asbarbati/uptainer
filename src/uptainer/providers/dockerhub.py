@@ -37,10 +37,7 @@ class DockerHub(BaseProvider):
 
         Returns:
             Return a dict that have image metadata like:
-            {"error": <bool>, "data": [
-                {"last_update": "<datetime object>",
-                 "name": ['<version1>', ...]},]
-            }
+            {'error': <bool>, 'data': [{'last_update': '<datetime object>", 'name': ['<version1>', ...]},]}
         """
         STATUS_CODE_OK = 200
         out = TyperImageVersion({"error": False, "data": []})
@@ -65,7 +62,11 @@ class DockerHub(BaseProvider):
                         break
             for item in tmpdb:
                 itemdate = datetime.strptime(item["last_updated"].split(".")[0], "%Y-%m-%dT%H:%M:%S")
-                out["data"].append({"last_update": itemdate, "name": item["name"]})
+                if isinstance(item["name"], str):
+                    tags = [item["name"]]
+                else:
+                    tags = item["name"]
+                out["data"].append({"last_update": itemdate, "name": tags})
         else:
             self.log.error(f"Error during getting image, returns: {req.json()}")
             out["error"] = True
@@ -79,10 +80,7 @@ class DockerHub(BaseProvider):
 
         Returns:
             Return a dict that have image metadata like:
-            {"error": <bool>, "data":
-                {"parent": "<organization name or user>",
-                 "project": "<project name>"}
-            }
+            {"error": <bool>, "data": {"parent": "<organization name or user>", "project": "<project name>"}}
         """
         DOCKERHUB_SPLITSLASHES = 2
         out = TyperMetadata({"error": False, "data": {"parent": "", "project": ""}})

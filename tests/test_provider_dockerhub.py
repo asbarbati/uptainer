@@ -21,4 +21,4 @@ def test_image_version():
     assert len(image_versions["data"]) == 200
 
     image_versions = provider_dh.get_image_versions("mirio", "githubapi-proxycache")
-    assert image_versions["data"][0]["name"] == "latest"
+    assert image_versions["data"][0]["name"] == ["latest"]
