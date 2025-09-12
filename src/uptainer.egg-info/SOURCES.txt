@@ -7,12 +7,15 @@ README.rst
 pyproject.toml
 docs/Makefile
 docs/conf.py
+docs/config.rst
 docs/contributing.rst
+docs/create_token.rst
 docs/index.rst
 docs/installation.rst
 docs/make.bat
 docs/readme.rst
 docs/reference.rst
+docs/schema.png
 docs/usage.rst
 docs/html/_static/file.png
 docs/html/_static/minus.png
