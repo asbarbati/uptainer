@@ -11,7 +11,7 @@ The configuration file is in YAML format and includes several default settings. 
 +-------------------------+-----------+-------------------+---------------------------------------------------------------------------------------------------+
 | **image_repository**    | True      |                   | The remote container registry to be check.                                                        |
 +-------------------------+-----------+-------------------+---------------------------------------------------------------------------------------------------+
-| **git_ssh_url**         | True      |                   | The remote SSH GIT URL to use for pull and push data                                              |
+| **git_url**             | True      |                   | The GIT URL to use for pull and push data. That can be HTTPS or SSH. *Please note, HTTPS authentication credentials must be provided either within the URL or via your operating system's credential helper. This is a limitation of the library used.*  |
 +-------------------------+-----------+-------------------+---------------------------------------------------------------------------------------------------+
 | **git_ssh_privatekey**  | False     | $HOME/.ssh/id_rsa | The ssh key to use for pull and push data.                                                        |
 +-------------------------+-----------+-------------------+---------------------------------------------------------------------------------------------------+
@@ -31,7 +31,7 @@ The results its something like
     repos:
     - name: My super project
       image_repository: ghcr.io/immich-app/immich-server
-      git_ssh_url: git@gitlab.example:main/mysuperproject.git
+      git_url: git@gitlab.example:main/mysuperproject.git
       git_ssh_privatekey: /home/username/.ssh/foobar
       git_branch: main
       git_values_filename: values.yaml
