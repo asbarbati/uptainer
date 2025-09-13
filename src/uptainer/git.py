@@ -22,6 +22,12 @@ class Git:
         self.remote_url = remote_url
         self.branch = branch
         self.log = log
+        if self.remote_url.startswith("https://"):
+            self.remote_proto = "HTTPS"
+        elif self.remote_url.startswith("git@") or self.remote_url.startswith("ssh://"):
+            self.remote_proto = "SSH"
+        else:
+            self.remote_proto = "NOT_SUPPORTED"
 
     def create_workdir(self) -> str:
         """Create a working directory under TMPDIR (platform based) and set it as workdir.
@@ -52,7 +58,16 @@ class Git:
         try:
             repo = git.Repo(self.work_directory)
             # Inject ssh key
-            with repo.git.custom_environment(GIT_SSH_COMMAND=f"ssh -i {self.private_key}"):
+            if self.remote_proto == "SSH":
+                with repo.git.custom_environment(GIT_SSH_COMMAND=f"ssh -i {self.private_key}"):
+                    if repo.is_dirty():
+                        self.log.info(f"Pushing the new version with the commit msg: '{commit_msg}'")
+                        repo.index.add([fpath])
+                        repo.index.commit(commit_msg)
+                        repo.remotes.origin.push()
+                    else:
+                        self.log.info("No changes to push.")
+            elif self.remote_proto == "HTTPS":
                 if repo.is_dirty():
                     self.log.info(f"Pushing the new version with the commit msg: '{commit_msg}'")
                     repo.index.add([fpath])
@@ -76,7 +91,7 @@ class Git:
             Return a dict that contain a boolean value for the errors.
         """
         out = TyperGenericReturn(error=False)
-        if self.remote_url.startswith("git@") or self.remote_url.startswith("ssh://"):
+        if self.remote_proto == "SSH":
             git_env = {"GIT_SSH_COMMAND": f"ssh -i {self.private_key}"}
             self.log.info(f"Pulling '{self.remote_url}' to '{self.work_directory}' using the key '{self.private_key}'")
             try:
@@ -87,7 +102,17 @@ class Git:
             except git.exc.GitCommandError as error:
                 self.log.error(f"Error during pulling the repo, error: '{error}'")
                 out["error"] = True
+        elif self.remote_proto == "HTTPS":
+            self.log.info(f"Pulling '{self.remote_url}' to '{self.work_directory}'")
+            try:
+                self.repo = git.Repo.clone_from(url=self.remote_url, to_path=self.work_directory)
+                self.log.info(f"Pull success. Switching to the branch '{self.branch}'")
+                self.repo.git.checkout(self.branch)
+            # TODO: Adding more catch strategy
+            except git.exc.GitCommandError as error:
+                self.log.error(f"Error during pulling the repo, error: '{error}'")
+                out["error"] = True
         else:
-            self.log.error("Uptainer currently support clone only via SSH. Exiting.")
+            self.log.error("Uptainer URL not supported. Exiting.")
             out["error"] = True
         return out

@@ -24,4 +24,4 @@ def test_git_clone_repo():
     git_obj = Git(log=log, remote_url="https://github.com/Mirio/verbacap.git", branch="main", ssh_private_key=f"{homedir}/.ssh/id_rsa")
     git_obj.create_workdir()
     check = git_obj.clone_repo()
-    assert check["error"] == True
+    assert check["error"] == False

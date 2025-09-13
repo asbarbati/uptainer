@@ -14,7 +14,7 @@ class Config:
         """
         self.name = None
         self.image_repository = None
-        self.git_ssh_url = None
+        self.git_url = None
         self.git_ssh_privatekey = None
         self.git_values_filename = None
         self.values_key = None
@@ -33,7 +33,7 @@ class Config:
         mandatory_vars = [
             "name",
             "image_repository",
-            "git_ssh_url",
+            "git_url",
             "git_values_filename",
             "values_key",
             "version_match",

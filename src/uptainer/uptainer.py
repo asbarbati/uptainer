@@ -166,7 +166,7 @@ class UpTainer:
         self.log.info(f"The version to apply: {version['data']}")
         git_obj = Git(
             log=self.log,
-            remote_url=self.config.git_ssh_url,
+            remote_url=self.config.git_url,
             branch=self.config.git_branch,
             ssh_private_key=self.config.git_ssh_privatekey,
         )

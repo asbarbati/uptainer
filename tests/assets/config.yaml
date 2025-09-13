@@ -1,7 +1,7 @@
 repos:
   - name: Foo
     image_repository: ghcr.io/mirio/verbacap
-    git_ssh_url: git@github.com:Mirio/verbacap-chart.git
+    git_url: git@github.com:Mirio/verbacap-chart.git
     git_ssh_privatekey: $HOME/.ssh/id_rsa
     git_branch: main
     git_values_filename: charts/verbacap/values.yaml
